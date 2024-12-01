@@ -1,4 +1,4 @@
-MODULE Modules;  (*Link and load on RISC; NW 20.10.2013 / 8.1.2019 / AP 1.5.23 Extended Oberon*)
+MODULE Modules;  (*Link and load on RISC; NW 20.10.2013 / 8.1.2019 / AP 1.12.23 Extended Oberon*)
   IMPORT SYSTEM, Kernel, Files;
   CONST versionkey = 1X; TR = 13; LNK = 15; DescSize = 96; MnLength = 32; context = "EO";
     noerr* = 0; nofile* = 1; badversion* = 2; badkey* = 3; badfile* = 4;
@@ -175,7 +175,7 @@ MODULE Modules;  (*Link and load on RISC; NW 20.10.2013 / 8.1.2019 / AP 1.5.23 E
           SYSTEM.PUT(adr, BLT + offset MOD C24);
           adr := adr - disp*4
         END ;
-        (*fixup of LDR/STR/ADD*)
+        (*fixup of LDR/STR/MOV/IOR*)
         adr := mod.prg + fixorgD*4;
         WHILE adr # mod.prg DO
           SYSTEM.GET(adr, inst);
@@ -193,10 +193,7 @@ MODULE Modules;  (*Link and load on RISC; NW 20.10.2013 / 8.1.2019 / AP 1.5.23 E
             IF ODD(inst DIV C8) THEN INC(offset, impmod.prg) ELSE INC(offset, impmod.var) END
           END ;
           SYSTEM.PUT(adr, MOV+U+B + pno*C24 + offset DIV C16);  (*mark as fixed up by setting the B bit*)
-          IF inst DIV C30 = F2 THEN inst := inst DIV C20 * C20
-          ELSE inst := IOR + inst DIV C24 MOD C4 * C24 + inst DIV C20 MOD C4 * C20
-          END ;
-          SYSTEM.PUT(adr+4, inst + offset MOD C16);
+          SYSTEM.PUT(adr+4, inst DIV C16 * C16 + offset MOD C16);
           adr := adr - disp*4
         END ;
         (*fixup of type descriptors*)
